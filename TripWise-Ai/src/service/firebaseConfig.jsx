@@ -7,7 +7,7 @@ import { getAnalytics } from "firebase/analytics";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCWyRre1Xz9lgHdMJd5tl4seM1qr3Pi1gk",
+  apiKey: "import.meta.env.FIREBASE_API_KEY",
   authDomain: "tripwise-ai.firebaseapp.com",
   projectId: "tripwise-ai",
   storageBucket: "tripwise-ai.firebasestorage.app",
