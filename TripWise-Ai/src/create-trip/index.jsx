@@ -124,7 +124,7 @@ const navigate = useNavigate();
       userEmail: user?.email,
       id: docId,
     });
-    {/*navigate("/view-trip/" + docId);*/}
+    navigate("/view-trip/" + docId);  
   };
 
   
