@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { SelectBudgetOptions } from "@/constants/options";
+import { AI_PROMPT, SelectBudgetOptions, SelectTravelList } from "@/constants/options";
 import React, { useEffect, useState } from "react";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import { toast } from "sonner";
@@ -13,10 +13,24 @@ import {
 } from "@/components/ui/dialog";
 import { useGoogleLogin } from "@react-oauth/google";
 import { FcGoogle } from "react-icons/fc";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { chatSession } from "@/service/AIModel";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/service/firebaseConfig";
 
 function CreateTrip() {
+  const [loading, setLoading] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const [place, setPlace] = useState();
-  const [formData, setFormData] = useState([]);
+  const [formData, setFormData] = useState({
+  location: "New York" ,
+  noOfDays: 5,
+  budget: "Moderate",
+  noOfPeople: 5,
+});
+const navigate = useNavigate();
 
   const handleInputChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
@@ -27,6 +41,13 @@ function CreateTrip() {
       console.log(formData);
     }, [formData]);
   }
+
+  {/*const handleSelect = _.debounce((value) => {
+    setPlace(value);
+    handleInputChange("location", value);
+  }, 1000);*/}
+
+
 
   const login = useGoogleLogin({
     onSuccess: (tokenResponse) => GetUserProfile(tokenResponse),
@@ -41,8 +62,8 @@ function CreateTrip() {
       return;
     }
 
-    if (formData?.noOfDays > 7) {
-      toast("Please enter no. of days less than 8");
+    if (formData?.noOfDays > 10) {
+      toast("Please enter no. of days less than 10");
       return;
     }
     if (
@@ -54,10 +75,11 @@ function CreateTrip() {
       toast("Please enter all the details");
       return;
     }
+
     setLoading(true);
     const FINAL_PROMPT = AI_PROMPT.replace(
       "{location}",
-      formData?.location?.label
+      formData?.location
     )
       .replace("{totalDays}", formData?.noOfDays)
       .replace("{traveler}", formData?.noOfPeople)
@@ -92,32 +114,31 @@ function CreateTrip() {
       });
   };
 
-  if (formData?.noOfDays > 10) {
-    toast("Please enter no. of days less than 10");
-    return;
-  }
+  const SaveAiTrip = async (TripData) => {
+    setLoading(true);
+    const user = JSON.parse(localStorage.getItem("user"));
+    const docId = Date.now().toString();
+    await setDoc(doc(db, "AITrips", docId), {
+      userChoice: formData,
+      tripData: JSON.parse(TripData),
+      userEmail: user?.email,
+      id: docId,
+    });
+    {/*navigate("/view-trip/" + docId);*/}
+  };
 
-  if (
-    !formData?.noOfDays ||
-    !formData?.location ||
-    !formData?.budget ||
-    !formData?.noOfPeople
-  ) {
-    toast("Please enter all the details");
-    return;
-  }
-
+  
   return (
-    <div className="sm:px-10 md:px-32 lg:px-56 xl:px-10 px-5 mt-10">
+    <div className="sm:px-10 md:px-32 lg:px-56 xl:px-72 px-5 mt-10">
       <h2 className="font-bold text-3xl">
-        Tell us about your Travel Preferences
+        Tell us about your Travel Preferences🚢✈️⛱️
       </h2>
       <p className="mt-3 text-gray-500 text-xl">
         Fill out this basic information amd out trip planner will genrate a
         customized itinerary based on your preferences.
       </p>
       {/*Destination search bar*/}
-      /*
+
       <div className="mt-20 flex flex-col gap-10">
         <div>
           <label className="text-black text-2xl font-semibold mb-2">
@@ -142,7 +163,7 @@ function CreateTrip() {
             For how many days are you planning?
           </label>
           <Input
-            placeholder="e.g., 6"
+            placeholder="Example: 6"
             type="number"
             onChange={(e) => handleInputChange("noOfDays", e.target.value)}
             className="w-full p-2 border rounded"
@@ -158,9 +179,9 @@ function CreateTrip() {
             {SelectBudgetOptions.map((item, index) => (
               <div
                 key={index}
-                className={`rounded-xl border-2 border-transparent hover:border-blue-500 hover:bg-white transition-all duration-300 p-6 cursor-pointer ${
+                className={`rounded-xl border-2 hover:border-blue-500 hover:bg-white transition-all duration-300 p-6 cursor-pointer ${
                   formData?.budget === item.title
-                    ? "shadow-lg bg-blue-600 text-white"
+                    ? "shadow-lg bg-blue-400 text-black"
                     : "bg-white"
                 }`}
                 onClick={() => handleInputChange("budget", item.title)}
@@ -184,9 +205,9 @@ function CreateTrip() {
             {SelectTravelList.map((item, index) => (
               <div
                 key={index}
-                className={`rounded-xl border-2 border-transparent hover:border-blue-500 hover:bg-white transition-all duration-300 p-6 cursor-pointer ${
+                className={`rounded-xl border-2 hover:border-blue-500 hover:bg-white transition-all duration-300 p-6 cursor-pointer ${
                   formData?.noOfPeople === item.people
-                    ? "shadow-lg bg-blue-600 text-white"
+                    ? "shadow-lg bg-blue-400 text-black"
                     : "bg-white"
                 }`}
                 onClick={() => handleInputChange("noOfPeople", item.people)}
@@ -206,12 +227,13 @@ function CreateTrip() {
           <Button
             onClick={onGenerateTrip}
             disabled={loading}
-            className="w-full py-3 text-lg"
+            className="w-full py-3 text-lg mt-3 mb-52"
           >
             {loading ? "Generating Trip..." : "Generate Trip"}
           </Button>
         </div>
       </div>
+
       {/* Sign In Dialog */}
       <Dialog open={openDialog}>
         <DialogContent>
@@ -219,9 +241,9 @@ function CreateTrip() {
             <DialogTitle>Sign In</DialogTitle>
             <DialogDescription>
               <div className="flex flex-col items-center">
-                <img src="/logo.png" alt="Logo" className="w-20 mb-4" />
+                <img src="logo.svg" alt="Logo" className="w-20 mb-4" />
                 <span>Sign in with Google Authentication securely</span>
-                <Button onClick={login} className="w-full mt-5">
+                <Button onClick={login} className="w-full mt-5 ">
                   <FcGoogle className="h-7 w-7" />
                   Sign in with Google
                 </Button>
