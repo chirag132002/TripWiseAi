@@ -47,6 +47,7 @@ const Header = () => {
   const login = useGoogleLogin({
     onSuccess: (tokenResponse) => GetUserProfile(tokenResponse),
     onError: (error) => console.log(error),
+    redirect_uri: window.location.origin,
   });
   return (
     <header className="flex justify-between items-center px-8 py-4 shadow-md bg-white">
