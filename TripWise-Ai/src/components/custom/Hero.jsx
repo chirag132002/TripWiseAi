@@ -1,5 +1,5 @@
 import React from 'react'
-import {Button} from '../ui/Button.jsx'
+import {Button} from '../ui/button.jsx'
 import {Link} from 'react-router-dom'
 import { Separator } from "@/components/custom/separator.jsx"
 function Hero() {
