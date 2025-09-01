@@ -1,34 +1,23 @@
-
 import React, { useEffect, useState } from "react";
-import { PHOTO_REF_URL } from "@/constants/options";
-import { GetPlaceDetails } from "@/service/GlobalApi";
 import { CiStar } from "react-icons/ci";
 import { GiTicket } from "react-icons/gi";
 import { FaClock, FaMapMarkerAlt } from "react-icons/fa";
 import { MdAttachMoney } from "react-icons/md";
 import { Link } from "react-router-dom";
+import { GetPlaceImage } from "@/service/GlobalApi";
 
 const ItineraryCard = ({ plan }) => {
   const [photoUrl, setPhotoUrl] = useState("");
 
   useEffect(() => {
-    if (plan) {
-      fetchPlacePhoto();
+    if (plan?.placeName) {
+      fetchImage();
     }
   }, [plan]);
 
-  const fetchPlacePhoto = async () => {
-    const data = { textQuery: plan?.placeName };
-    try {
-      const result = await GetPlaceDetails(data);
-      const photoName = result.data.places[0].photos[0]?.name;
-      if (photoName) {
-        const url = PHOTO_REF_URL.replace("{NAME}", photoName);
-        setPhotoUrl(url);
-      }
-    } catch (error) {
-      console.error("Error fetching place photo:", error);
-    }
+  const fetchImage = async () => {
+    const img = await GetPlaceImage(plan?.placeName);
+    setPhotoUrl(img);
   };
 
   return (

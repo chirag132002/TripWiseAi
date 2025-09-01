@@ -1,6 +1,7 @@
 import React from 'react'
 import {Button} from '../ui/Button.jsx'
 import {Link} from 'react-router-dom'
+import { Separator } from "@/components/custom/separator.jsx"
 function Hero() {
   return (
     <div className = "flex flex-col items-center mx-56 gap-9">
@@ -10,6 +11,9 @@ function Hero() {
       <Link to={'/create-trip'}>
       <Button>Start Exploring</Button>
       </Link>
+      <img src="/landing.jpeg" alt="" className='w-[850px] m-10 rounded-2xl shadow-2xl' />
+      <div className="h-[100px]"></div> 
+      <Separator />
     </div>
   )
 }

@@ -1,12 +1,27 @@
 import axios from "axios";
-const BASE_URL = "https://places.googleapis.com/v1/places:searchText";
 
-const config = {
-  headers: {
-    "Content-Type": "application/json",
-    "X-Goog-Api-Key": import.meta.env.VITE_GOOGLE_PLACE_API_KEY,
-    "X-Goog-FieldMask": ["places.photos", "places.displayName", "places.id"],
-  },
+const UNSPLASH_ACCESS_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+
+export const GetPlaceImage = async (query) => {
+  try {
+    const response = await axios.get("https://api.unsplash.com/search/photos", {
+      params: {
+        query,
+        per_page: 1,
+        orientation: "landscape",
+      },
+      headers: {
+        Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
+      },
+    });
+
+    if (response.data.results.length > 0) {
+      return response.data.results[0].urls.small;
+    } else {
+      return "https://via.placeholder.com/400x300?text=No+Image";
+    }
+  } catch (error) {
+    console.error("Unsplash fetch error:", error.message);
+    return "https://via.placeholder.com/400x300?text=Error";
+  }
 };
-
-export const GetPlaceDetails = (data) => axios.post(BASE_URL, data, config);

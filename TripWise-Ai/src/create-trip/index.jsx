@@ -1,7 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { AI_PROMPT, SelectBudgetOptions, SelectTravelList } from "@/constants/options";
 import React, { useEffect, useState } from "react";
-import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -9,7 +8,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useGoogleLogin } from "@react-oauth/google";
 import { FcGoogle } from "react-icons/fc";
@@ -21,16 +19,17 @@ import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/service/firebaseConfig";
 
 function CreateTrip() {
+  const [suggestions, setSuggestions] = useState([]); 
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [place, setPlace] = useState();
   const [formData, setFormData] = useState({
-  location: "New York" ,
-  noOfDays: 5,
-  budget: "Moderate",
-  noOfPeople: 5,
-});
-const navigate = useNavigate();
+    location: "New York",
+    noOfDays: 5,
+    budget: "Moderate",
+    noOfPeople: 5,
+  });
+  const navigate = useNavigate();
 
   const handleInputChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
@@ -144,7 +143,8 @@ const navigate = useNavigate();
           <label className="text-black text-2xl font-semibold mb-2">
             Choose Your Destination
           </label>
-          <GooglePlacesAutocomplete
+
+          {/* <GooglePlacesAutocomplete
             apiKey={import.meta.env.VITE_GOOGLE_PLACE_API_KEY}
             selectProps={{
               place,
@@ -153,7 +153,29 @@ const navigate = useNavigate();
                 console.log(v);
               },
             }}
+          /> */}
+
+          <Input
+            placeholder="Type a location..."
+            value={formData.location}
+            onChange={(e) => handleInputChange("location", e.target.value)}
+            className="w-full p-2 border rounded"
           />
+          {/* Suggestions list */}
+          <ul className="border rounded mt-2 bg-white shadow-md max-h-40 overflow-y-auto">
+            {suggestions.map((place) => (
+              <li
+                key={place.place_id}
+                className="p-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => {
+                  handleInputChange("location", place.display_name);
+                  setSuggestions([]);
+                }}
+              >
+                {place.display_name}
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/*Duration*/}

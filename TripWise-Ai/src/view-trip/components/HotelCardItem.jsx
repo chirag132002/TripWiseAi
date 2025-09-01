@@ -1,28 +1,22 @@
-import { PHOTO_REF_URL } from "@/constants/options";
-import { GetPlaceDetails } from "@/service/GlobalApi";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { CiStar } from "react-icons/ci";
+import { GetPlaceImage } from "@/service/GlobalApi";
+
 const HotelCardItem = ({ h }) => {
-  const [photoUrl, setPhotoUrl] = useState();
+  const [photoUrl, setPhotoUrl] = useState("");
+
   useEffect(() => {
-    h && GetPlacePhoto();
+    if (h?.name) {
+      fetchImage();
+    }
   }, [h]);
 
-  const GetPlacePhoto = async () => {
-    const data = {
-      textQuery: h?.name,
-    };
-    const result = await GetPlaceDetails(data).then((resp) => {
-      console.log(resp.data.places[0].photos[0].name);
-
-      const PhotoUrl = PHOTO_REF_URL.replace(
-        "{NAME}",
-        resp.data.places[1].photos[1].name
-      );
-      setPhotoUrl(PhotoUrl);
-    });
+  const fetchImage = async () => {
+    const img = await GetPlaceImage(h?.name);
+    setPhotoUrl(img);
   };
+
   return (
     <div>
       <Link
